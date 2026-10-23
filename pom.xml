@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.github.gracegrc</groupId>
 	<artifactId>regulatory-ingestion-service</artifactId>
-	<version>0.0.1</version>
+	<version>${revision}</version>
 	<name>regulatory-ingestion-service</name>
 	<description>Acquires regulatory files, stores them and publishes RegulationIngested</description>
 	<url>https://github.com/GRaCe-GRC/regulatory-ingestion-service</url>
@@ -24,6 +24,7 @@
 		<url>https://github.com/GRaCe-GRC/regulatory-ingestion-service</url>
 	</scm>
 	<properties>
+		<revision>0.0.1-SNAPSHOT</revision>
 		<java.version>25</java.version>
 	</properties>
 	<dependencies>
