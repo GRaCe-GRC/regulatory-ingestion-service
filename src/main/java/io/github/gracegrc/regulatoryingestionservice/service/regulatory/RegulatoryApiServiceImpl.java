@@ -32,4 +32,9 @@ public class RegulatoryApiServiceImpl implements RegulatoryApiService {
 		return RegulatoryAuthorityMapper.toResponseDto(regulatoryApiClient.findAuthorityById(id));
 	}
 
+	@Override
+	public void deleteAuthority(UUID id) {
+		regulatoryApiClient.deleteAuthority(id);
+	}
+
 }

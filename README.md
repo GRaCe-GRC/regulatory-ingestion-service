@@ -33,6 +33,7 @@ SERVER_PORT=8081 ./mvnw spring-boot:run
 | `POST /api/v1/authorities` | `name`, `jurisdiction`, `createdBy` | `201`, empty body, `Location` header with the new authority's URL |
 | `GET /api/v1/authorities` | | `200` with the list of authorities |
 | `GET /api/v1/authorities/{id}` | | `200` with the authority |
+| `DELETE /api/v1/authorities/{id}` | | `204`, empty body |
 
 Requests are validated here (`400` with an `errors` field per property) and then sent to the
 Regulatory API. Its `4xx` problem details (`404` unknown id, `409` duplicate name) are returned

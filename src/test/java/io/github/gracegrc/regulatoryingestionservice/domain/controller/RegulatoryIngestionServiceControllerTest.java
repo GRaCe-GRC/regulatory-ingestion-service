@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
@@ -145,6 +146,41 @@ class RegulatoryIngestionServiceControllerTest {
 		assertThat(mvc.get().uri("/api/v1/authorities")).hasStatus(HttpStatus.BAD_GATEWAY)
 			.bodyJson()
 			.isLenientlyEqualTo("{\"status\":502,\"detail\":\"The Regulatory API is unavailable\"}");
+	}
+
+	@Test
+	void deleteReturnsNoContent() {
+		assertThat(mvc.delete().uri("/api/v1/authorities/{id}", ID)).hasStatus(HttpStatus.NO_CONTENT).body().isEmpty();
+		then(regulatoryApiService).should().deleteAuthority(ID);
+	}
+
+	@Test
+	void deleteWithAnUnknownIdReturnsTheNotFoundUnchanged() {
+		String problem = "{\"title\":\"Not Found\",\"status\":404,\"detail\":\"Authority " + ID + " not found\"}";
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+		willThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", headers,
+				problem.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8))
+			.given(regulatoryApiService)
+			.deleteAuthority(ID);
+
+		assertThat(mvc.delete().uri("/api/v1/authorities/{id}", ID)).hasStatus(HttpStatus.NOT_FOUND)
+			.hasContentType(MediaType.APPLICATION_PROBLEM_JSON)
+			.bodyText()
+			.isEqualTo(problem);
+	}
+
+	@Test
+	void deleteWhenTheRegulatoryApiIsUnreachableReturnsBadGateway() {
+		willThrow(new ResourceAccessException("Connection refused")).given(regulatoryApiService).deleteAuthority(ID);
+
+		assertThat(mvc.delete().uri("/api/v1/authorities/{id}", ID)).hasStatus(HttpStatus.BAD_GATEWAY);
+	}
+
+	@Test
+	void deleteWithAMalformedIdReturnsBadRequest() {
+		assertThat(mvc.delete().uri("/api/v1/authorities/not-a-uuid")).hasStatus(HttpStatus.BAD_REQUEST);
+		then(regulatoryApiService).shouldHaveNoInteractions();
 	}
 
 }

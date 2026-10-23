@@ -2,6 +2,7 @@ package io.github.gracegrc.regulatoryingestionservice.service.regulatory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import io.github.gracegrc.regulatoryingestionservice.boot.client.RegulatoryApiClient;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
@@ -57,6 +58,13 @@ class RegulatoryApiServiceImplTest {
 		given(regulatoryApiClient.findAuthorityById(ID)).willReturn(API_AUTHORITY);
 
 		assertThat(regulatoryApiService.findAuthorityById(ID)).isEqualTo(AUTHORITY);
+	}
+
+	@Test
+	void deleteAuthorityAsksTheClientToDeleteIt() {
+		regulatoryApiService.deleteAuthority(ID);
+
+		then(regulatoryApiClient).should().deleteAuthority(ID);
 	}
 
 }

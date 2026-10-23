@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -113,6 +114,29 @@ class RegulatoryApiClientTest {
 			.andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(problem));
 
 		assertThatThrownBy(() -> regulatoryApiClient.findAuthorityById(ID))
+			.isInstanceOfSatisfying(HttpClientErrorException.class, ex -> {
+				assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+				assertThat(ex.getResponseBodyAsString()).isEqualTo(problem);
+			});
+	}
+
+	@Test
+	void deleteAuthoritySendsADeleteRequest() {
+		server.expect(requestTo("http://regulatory-api.test/api/v1/authorities/" + ID))
+			.andExpect(method(HttpMethod.DELETE))
+			.andRespond(withNoContent());
+
+		regulatoryApiClient.deleteAuthority(ID);
+	}
+
+	@Test
+	void deleteAuthorityWithAnUnknownIdKeepsTheNotFound() {
+		String problem = "{\"status\":404,\"detail\":\"Authority " + ID + " not found\"}";
+		server.expect(requestTo("http://regulatory-api.test/api/v1/authorities/" + ID))
+			.andExpect(method(HttpMethod.DELETE))
+			.andRespond(withStatus(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_PROBLEM_JSON).body(problem));
+
+		assertThatThrownBy(() -> regulatoryApiClient.deleteAuthority(ID))
 			.isInstanceOfSatisfying(HttpClientErrorException.class, ex -> {
 				assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 				assertThat(ex.getResponseBodyAsString()).isEqualTo(problem);
