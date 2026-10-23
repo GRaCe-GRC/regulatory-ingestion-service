@@ -2,21 +2,42 @@
 
 Acquires regulatory files, stores them and publishes RegulationIngested.
 
-> **Status:** starter app. It starts a Spring Boot application with Actuator endpoints and nothing else. Features arrive in later stories.
+> **Status:** creates and reads regulatory authorities through the [Regulatory API](https://github.com/GRaCe-GRC/regulatory-api).
 
 ## Stack
 - Java (latest LTS at setup), Spring Boot (latest stable at setup)
 - Maven, via the Maven wrapper (`./mvnw`)
 
 ## Getting started
+The service calls the Regulatory API. To run both on one machine, start the Regulatory API on
+port 8080 (see its README), then this service on another port:
+
 ```bash
-./mvnw spring-boot:run
+SERVER_PORT=8081 ./mvnw spring-boot:run
 ```
+
+| Environment variable | Default | Description |
+|---|---|---|
+| `REGULATORY_API_URL` | `http://localhost:8080` | Base URL of the Regulatory API |
 
 | Endpoint | Description |
 |---|---|
 | `GET http://localhost:8080/actuator/health` | Health status (`UP`) |
 | `GET http://localhost:8080/actuator/info` | Application info |
+| `GET http://localhost:8080/swagger-ui.html` | API documentation (OpenAPI at `/v3/api-docs`) |
+
+## Authorities API
+
+| Method and path | Body | Response |
+|---|---|---|
+| `POST /api/v1/authorities` | `name`, `jurisdiction`, `createdBy` | `201`, empty body, `Location` header with the new authority's URL |
+| `GET /api/v1/authorities` | | `200` with the list of authorities |
+| `GET /api/v1/authorities/{id}` | | `200` with the authority |
+
+Requests are validated here (`400` with an `errors` field per property) and then sent to the
+Regulatory API. Its `4xx` problem details (`404` unknown id, `409` duplicate name) are returned
+unchanged; when it fails, cannot be reached or returns no `Location` for a new authority, the
+response is `502`. Calls to the Regulatory API are in `boot/client/RegulatoryApiClient`.
 
 ## Test and build
 ```bash
