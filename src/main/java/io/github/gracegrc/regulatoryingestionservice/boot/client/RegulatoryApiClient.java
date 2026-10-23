@@ -47,6 +47,10 @@ public class RegulatoryApiClient {
 			.body(RegulatoryApiAuthorityResponseDto.class);
 	}
 
+	public void deleteAuthority(UUID id) {
+		regulatoryApiRestClient.delete().uri(AUTHORITIES_PATH + "/{id}", id).retrieve().toBodilessEntity();
+	}
+
 	private static UUID idFrom(URI location) {
 		if (location == null) {
 			throw new RestClientException("The Regulatory API did not return the location of the new authority");
