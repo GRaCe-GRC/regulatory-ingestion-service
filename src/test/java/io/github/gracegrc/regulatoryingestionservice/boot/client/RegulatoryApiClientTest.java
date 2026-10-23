@@ -10,8 +10,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import io.github.gracegrc.regulatoryingestionservice.boot.RegulatoryApiConfig;
-import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
-import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityResponseDto;
 import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
@@ -39,7 +39,7 @@ class RegulatoryApiClientTest {
 	private static final String AUTHORITY_JSON = "{\"id\":\"" + ID + "\",\"name\":\"EBA\",\"jurisdiction\":\"EU\","
 			+ "\"createdAt\":\"2026-10-01T10:15:30Z\",\"enabled\":true,\"createdBy\":\"admin-console\"}";
 
-	private static final RegulatoryAuthorityResponseDto AUTHORITY = new RegulatoryAuthorityResponseDto(ID, "EBA", "EU",
+	private static final RegulatoryApiAuthorityResponseDto AUTHORITY = new RegulatoryApiAuthorityResponseDto(ID, "EBA", "EU",
 			Instant.parse("2026-10-01T10:15:30Z"), true, "admin-console");
 
 	@Autowired
@@ -61,7 +61,7 @@ class RegulatoryApiClientTest {
 			.andRespond(withStatus(HttpStatus.CREATED)
 				.location(URI.create("http://regulatory-api.test/api/v1/authorities/" + ID)));
 
-		UUID id = regulatoryApiClient.createAuthority(new RegulatoryAuthorityRequestDto("EBA", "EU", "admin-console"));
+		UUID id = regulatoryApiClient.createAuthority(new RegulatoryApiAuthorityRequestDto("EBA", "EU", "admin-console"));
 
 		assertThat(id).isEqualTo(ID);
 	}
@@ -72,7 +72,7 @@ class RegulatoryApiClientTest {
 			.andRespond(withStatus(HttpStatus.CREATED));
 
 		assertThatThrownBy(
-				() -> regulatoryApiClient.createAuthority(new RegulatoryAuthorityRequestDto("EBA", "EU", "admin-console")))
+				() -> regulatoryApiClient.createAuthority(new RegulatoryApiAuthorityRequestDto("EBA", "EU", "admin-console")))
 			.isInstanceOf(RestClientException.class)
 			.hasMessage("The Regulatory API did not return the location of the new authority");
 	}
@@ -83,7 +83,7 @@ class RegulatoryApiClientTest {
 			.andRespond(withStatus(HttpStatus.CREATED).location(URI.create("http://regulatory-api.test/api/v1/authorities/x")));
 
 		assertThatThrownBy(
-				() -> regulatoryApiClient.createAuthority(new RegulatoryAuthorityRequestDto("EBA", "EU", "admin-console")))
+				() -> regulatoryApiClient.createAuthority(new RegulatoryApiAuthorityRequestDto("EBA", "EU", "admin-console")))
 			.isInstanceOf(RestClientException.class)
 			.hasMessageStartingWith("The Regulatory API returned an invalid location");
 	}

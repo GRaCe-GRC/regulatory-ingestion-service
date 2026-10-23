@@ -1,7 +1,7 @@
 package io.github.gracegrc.regulatoryingestionservice.boot.client;
 
-import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
-import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityResponseDto;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class RegulatoryApiClient {
 		this.regulatoryApiRestClient = regulatoryApiRestClient;
 	}
 
-	public UUID createAuthority(RegulatoryAuthorityRequestDto request) {
+	public UUID createAuthority(RegulatoryApiAuthorityRequestDto request) {
 		URI location = regulatoryApiRestClient.post()
 			.uri(AUTHORITIES_PATH)
 			.body(request)
@@ -32,7 +32,7 @@ public class RegulatoryApiClient {
 		return idFrom(location);
 	}
 
-	public List<RegulatoryAuthorityResponseDto> findAllAuthorities() {
+	public List<RegulatoryApiAuthorityResponseDto> findAllAuthorities() {
 		return regulatoryApiRestClient.get()
 			.uri(AUTHORITIES_PATH)
 			.retrieve()
@@ -40,11 +40,11 @@ public class RegulatoryApiClient {
 			});
 	}
 
-	public RegulatoryAuthorityResponseDto findAuthorityById(UUID id) {
+	public RegulatoryApiAuthorityResponseDto findAuthorityById(UUID id) {
 		return regulatoryApiRestClient.get()
 			.uri(AUTHORITIES_PATH + "/{id}", id)
 			.retrieve()
-			.body(RegulatoryAuthorityResponseDto.class);
+			.body(RegulatoryApiAuthorityResponseDto.class);
 	}
 
 	private static UUID idFrom(URI location) {

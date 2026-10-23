@@ -37,7 +37,9 @@ SERVER_PORT=8081 ./mvnw spring-boot:run
 Requests are validated here (`400` with an `errors` field per property) and then sent to the
 Regulatory API. Its `4xx` problem details (`404` unknown id, `409` duplicate name) are returned
 unchanged; when it fails, cannot be reached or returns no `Location` for a new authority, the
-response is `502`. Calls to the Regulatory API are in `boot/client/RegulatoryApiClient`.
+response is `502`. Calls to the Regulatory API are in `boot/client/RegulatoryApiClient`, which uses the Regulatory
+API's own DTOs (`service/model/dto`); `domain/mapper/RegulatoryAuthorityMapper` converts them to and
+from this service's DTOs.
 
 ## Test and build
 ```bash

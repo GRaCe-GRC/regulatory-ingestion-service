@@ -1,6 +1,7 @@
 package io.github.gracegrc.regulatoryingestionservice.service.regulatory;
 
 import io.github.gracegrc.regulatoryingestionservice.boot.client.RegulatoryApiClient;
+import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryAuthorityMapper;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
 import java.util.List;
@@ -18,17 +19,17 @@ public class RegulatoryApiServiceImpl implements RegulatoryApiService {
 
 	@Override
 	public UUID createAuthority(RegulatoryAuthorityRequestDto request) {
-		return regulatoryApiClient.createAuthority(request);
+		return regulatoryApiClient.createAuthority(RegulatoryAuthorityMapper.toRegulatoryApiRequest(request));
 	}
 
 	@Override
 	public List<RegulatoryAuthorityResponseDto> findAllAuthorities() {
-		return regulatoryApiClient.findAllAuthorities();
+		return regulatoryApiClient.findAllAuthorities().stream().map(RegulatoryAuthorityMapper::toResponseDto).toList();
 	}
 
 	@Override
 	public RegulatoryAuthorityResponseDto findAuthorityById(UUID id) {
-		return regulatoryApiClient.findAuthorityById(id);
+		return RegulatoryAuthorityMapper.toResponseDto(regulatoryApiClient.findAuthorityById(id));
 	}
 
 }
