@@ -2,6 +2,8 @@ package io.github.gracegrc.regulatoryingestionservice.domain.controller;
 
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.regulatory.RegulatoryApiService;
@@ -72,6 +74,27 @@ public class RegulatoryIngestionServiceController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteFramework(@PathVariable UUID id) {
 		regulatoryApiService.deleteFramework(id);
+	}
+
+	@PostMapping("/files")
+	public ResponseEntity<Void> createFile(@Valid @RequestBody RegulatoryFileRequestDto request) {
+		return created(regulatoryApiService.createFile(request));
+	}
+
+	@GetMapping("/files")
+	public List<RegulatoryFileResponseDto> findAllFiles(@RequestParam(required = false) UUID frameworkId) {
+		return regulatoryApiService.findAllFiles(frameworkId);
+	}
+
+	@GetMapping("/files/{id}")
+	public RegulatoryFileResponseDto findFileById(@PathVariable UUID id) {
+		return regulatoryApiService.findFileById(id);
+	}
+
+	@DeleteMapping("/files/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteFile(@PathVariable UUID id) {
+		regulatoryApiService.deleteFile(id);
 	}
 
 	private static ResponseEntity<Void> created(UUID id) {
