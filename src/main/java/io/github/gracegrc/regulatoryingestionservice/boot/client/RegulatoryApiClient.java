@@ -6,6 +6,8 @@ import io.github.gracegrc.regulatoryingestionservice.service.model.dto.Regulator
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiRequirementRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiRequirementResponseDto;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,8 @@ public class RegulatoryApiClient {
 	private static final String FRAMEWORKS_PATH = "/api/v1/frameworks";
 
 	private static final String FILES_PATH = "/api/v1/files";
+
+	private static final String REQUIREMENTS_PATH = "/api/v1/requirements";
 
 	private final RestClient regulatoryApiRestClient;
 
@@ -101,6 +105,32 @@ public class RegulatoryApiClient {
 
 	public void deleteFile(UUID id) {
 		delete(FILES_PATH, id);
+	}
+
+	public UUID createRequirement(RegulatoryApiRequirementRequestDto request) {
+		return create(REQUIREMENTS_PATH, request, "requirement");
+	}
+
+	public List<RegulatoryApiRequirementResponseDto> findAllRequirements(UUID fileId, UUID parentId) {
+		return regulatoryApiRestClient.get()
+			.uri(builder -> builder.path(REQUIREMENTS_PATH)
+				.queryParamIfPresent("fileId", Optional.ofNullable(fileId))
+				.queryParamIfPresent("parentId", Optional.ofNullable(parentId))
+				.build())
+			.retrieve()
+			.body(new ParameterizedTypeReference<>() {
+			});
+	}
+
+	public RegulatoryApiRequirementResponseDto findRequirementById(UUID id) {
+		return regulatoryApiRestClient.get()
+			.uri(REQUIREMENTS_PATH + "/{id}", id)
+			.retrieve()
+			.body(RegulatoryApiRequirementResponseDto.class);
+	}
+
+	public void deleteRequirement(UUID id) {
+		delete(REQUIREMENTS_PATH, id);
 	}
 
 	private UUID create(String path, Object request, String resource) {

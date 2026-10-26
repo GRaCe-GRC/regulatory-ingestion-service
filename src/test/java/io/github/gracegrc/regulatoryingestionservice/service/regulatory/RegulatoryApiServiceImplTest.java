@@ -11,12 +11,16 @@ import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.Regulatory
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryRequirementRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryRequirementResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiRequirementRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiRequirementResponseDto;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -57,6 +61,16 @@ class RegulatoryApiServiceImplTest {
 
 	private static final RegulatoryFileResponseDto FILE = new RegulatoryFileResponseDto(FILE_ID, FRAMEWORK_ID,
 			"CRR consolidated text", null, "2024-07", PUBLISHED, CREATED_AT, "admin-console");
+
+	private static final UUID REQUIREMENT_ID = UUID.fromString("e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a50");
+
+	private static final UUID PARENT_ID = UUID.fromString("a9b8c7d6-e5f4-4a3b-9c2d-1e0f9a8b7c60");
+
+	private static final RegulatoryApiRequirementResponseDto API_REQUIREMENT = new RegulatoryApiRequirementResponseDto(
+			REQUIREMENT_ID, FILE_ID, PARENT_ID, "164.308(a)(4)(i)", null, "Text", CREATED_AT, "admin-console");
+
+	private static final RegulatoryRequirementResponseDto REQUIREMENT = new RegulatoryRequirementResponseDto(
+			REQUIREMENT_ID, FILE_ID, PARENT_ID, "164.308(a)(4)(i)", null, "Text", CREATED_AT, "admin-console");
 
 	@Mock
 	private RegulatoryApiClient regulatoryApiClient;
@@ -156,6 +170,38 @@ class RegulatoryApiServiceImplTest {
 		regulatoryApiService.deleteFile(FILE_ID);
 
 		then(regulatoryApiClient).should().deleteFile(FILE_ID);
+	}
+
+	@Test
+	void createRequirementSendsTheMappedRequestAndReturnsTheId() {
+		given(regulatoryApiClient.createRequirement(new RegulatoryApiRequirementRequestDto(FILE_ID, PARENT_ID,
+				"164.308(a)(4)(i)", null, "Text", "admin-console")))
+			.willReturn(REQUIREMENT_ID);
+
+		assertThat(regulatoryApiService.createRequirement(new RegulatoryRequirementRequestDto(FILE_ID, PARENT_ID,
+				"164.308(a)(4)(i)", null, "Text", "admin-console")))
+			.isEqualTo(REQUIREMENT_ID);
+	}
+
+	@Test
+	void findAllRequirementsPassesBothFiltersAndMapsTheList() {
+		given(regulatoryApiClient.findAllRequirements(FILE_ID, PARENT_ID)).willReturn(List.of(API_REQUIREMENT));
+
+		assertThat(regulatoryApiService.findAllRequirements(FILE_ID, PARENT_ID)).containsExactly(REQUIREMENT);
+	}
+
+	@Test
+	void findRequirementByIdMapsTheRequirementFromTheClient() {
+		given(regulatoryApiClient.findRequirementById(REQUIREMENT_ID)).willReturn(API_REQUIREMENT);
+
+		assertThat(regulatoryApiService.findRequirementById(REQUIREMENT_ID)).isEqualTo(REQUIREMENT);
+	}
+
+	@Test
+	void deleteRequirementAsksTheClientToDeleteIt() {
+		regulatoryApiService.deleteRequirement(REQUIREMENT_ID);
+
+		then(regulatoryApiClient).should().deleteRequirement(REQUIREMENT_ID);
 	}
 
 }
