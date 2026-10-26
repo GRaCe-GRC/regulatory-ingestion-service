@@ -4,12 +4,15 @@ import io.github.gracegrc.regulatoryingestionservice.boot.client.RegulatoryApiCl
 import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryAuthorityMapper;
 import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryFileMapper;
 import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryFrameworkMapper;
+import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryRequirementMapper;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryRequirementRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryRequirementResponseDto;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -84,6 +87,29 @@ public class RegulatoryApiServiceImpl implements RegulatoryApiService {
 	@Override
 	public void deleteFile(UUID id) {
 		regulatoryApiClient.deleteFile(id);
+	}
+
+	@Override
+	public UUID createRequirement(RegulatoryRequirementRequestDto request) {
+		return regulatoryApiClient.createRequirement(RegulatoryRequirementMapper.toRegulatoryApiRequest(request));
+	}
+
+	@Override
+	public List<RegulatoryRequirementResponseDto> findAllRequirements(UUID fileId, UUID parentId) {
+		return regulatoryApiClient.findAllRequirements(fileId, parentId)
+			.stream()
+			.map(RegulatoryRequirementMapper::toResponseDto)
+			.toList();
+	}
+
+	@Override
+	public RegulatoryRequirementResponseDto findRequirementById(UUID id) {
+		return RegulatoryRequirementMapper.toResponseDto(regulatoryApiClient.findRequirementById(id));
+	}
+
+	@Override
+	public void deleteRequirement(UUID id) {
+		regulatoryApiClient.deleteRequirement(id);
 	}
 
 }
