@@ -2,7 +2,7 @@
 
 Acquires regulatory files, stores them and publishes RegulationIngested.
 
-> **Status:** creates, reads and deletes regulatory authorities and frameworks through the [Regulatory API](https://github.com/GRaCe-GRC/regulatory-api).
+> **Status:** creates, reads and deletes regulatory authorities, frameworks and files through the [Regulatory API](https://github.com/GRaCe-GRC/regulatory-api).
 
 ## Stack
 - Java (latest LTS at setup), Spring Boot (latest stable at setup)
@@ -44,10 +44,21 @@ SERVER_PORT=8081 ./mvnw spring-boot:run
 | `GET /api/v1/frameworks/{id}` | | `200` with the framework |
 | `DELETE /api/v1/frameworks/{id}` | | `204`, empty body |
 
+## Files API
+
+| Method and path | Body | Response |
+|---|---|---|
+| `POST /api/v1/files` | `frameworkId`, `title`, `sourceUrl`, `versionLabel`, `publicationDate`, `createdBy` | `201`, empty body, `Location` header with the new file's URL |
+| `GET /api/v1/files?frameworkId=` | | `200` with the list of files, all of them or only the framework's |
+| `GET /api/v1/files/{id}` | | `200` with the file |
+| `DELETE /api/v1/files/{id}` | | `204`, empty body |
+
+`publicationDate` is a date (`YYYY-MM-DD`).
+
 ## Errors
 Requests are validated here (`400` with an `errors` field per property) and then sent to the
 Regulatory API. Its `4xx` problem details (for example `404` unknown id, `409` duplicate name, or
-`409` when deleting an authority that still has frameworks) are returned unchanged; when it fails,
+`409` when deleting an authority that still has frameworks or a framework that still has files) are returned unchanged; when it fails,
 cannot be reached or returns no `Location` for a new resource, the response is `502`. Calls to the
 Regulatory API are in `boot/client/RegulatoryApiClient`, which uses the Regulatory API's own DTOs
 (`service/model/dto`); the mappers in `domain/mapper` convert them to and from this service's DTOs.

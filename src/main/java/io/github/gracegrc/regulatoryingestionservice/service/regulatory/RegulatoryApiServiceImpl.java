@@ -2,9 +2,12 @@ package io.github.gracegrc.regulatoryingestionservice.service.regulatory;
 
 import io.github.gracegrc.regulatoryingestionservice.boot.client.RegulatoryApiClient;
 import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryAuthorityMapper;
+import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryFileMapper;
 import io.github.gracegrc.regulatoryingestionservice.domain.mapper.RegulatoryFrameworkMapper;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkResponseDto;
 import java.util.List;
@@ -61,6 +64,26 @@ public class RegulatoryApiServiceImpl implements RegulatoryApiService {
 	@Override
 	public void deleteFramework(UUID id) {
 		regulatoryApiClient.deleteFramework(id);
+	}
+
+	@Override
+	public UUID createFile(RegulatoryFileRequestDto request) {
+		return regulatoryApiClient.createFile(RegulatoryFileMapper.toRegulatoryApiRequest(request));
+	}
+
+	@Override
+	public List<RegulatoryFileResponseDto> findAllFiles(UUID frameworkId) {
+		return regulatoryApiClient.findAllFiles(frameworkId).stream().map(RegulatoryFileMapper::toResponseDto).toList();
+	}
+
+	@Override
+	public RegulatoryFileResponseDto findFileById(UUID id) {
+		return RegulatoryFileMapper.toResponseDto(regulatoryApiClient.findFileById(id));
+	}
+
+	@Override
+	public void deleteFile(UUID id) {
+		regulatoryApiClient.deleteFile(id);
 	}
 
 }

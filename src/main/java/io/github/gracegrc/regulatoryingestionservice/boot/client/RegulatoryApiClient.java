@@ -2,6 +2,8 @@ package io.github.gracegrc.regulatoryingestionservice.boot.client;
 
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkResponseDto;
 import java.net.URI;
@@ -19,6 +21,8 @@ public class RegulatoryApiClient {
 	private static final String AUTHORITIES_PATH = "/api/v1/authorities";
 
 	private static final String FRAMEWORKS_PATH = "/api/v1/frameworks";
+
+	private static final String FILES_PATH = "/api/v1/files";
 
 	private final RestClient regulatoryApiRestClient;
 
@@ -72,6 +76,31 @@ public class RegulatoryApiClient {
 
 	public void deleteFramework(UUID id) {
 		delete(FRAMEWORKS_PATH, id);
+	}
+
+	public UUID createFile(RegulatoryApiFileRequestDto request) {
+		return create(FILES_PATH, request, "file");
+	}
+
+	public List<RegulatoryApiFileResponseDto> findAllFiles(UUID frameworkId) {
+		return regulatoryApiRestClient.get()
+			.uri(builder -> builder.path(FILES_PATH)
+				.queryParamIfPresent("frameworkId", Optional.ofNullable(frameworkId))
+				.build())
+			.retrieve()
+			.body(new ParameterizedTypeReference<>() {
+			});
+	}
+
+	public RegulatoryApiFileResponseDto findFileById(UUID id) {
+		return regulatoryApiRestClient.get()
+			.uri(FILES_PATH + "/{id}", id)
+			.retrieve()
+			.body(RegulatoryApiFileResponseDto.class);
+	}
+
+	public void deleteFile(UUID id) {
+		delete(FILES_PATH, id);
 	}
 
 	private UUID create(String path, Object request, String resource) {

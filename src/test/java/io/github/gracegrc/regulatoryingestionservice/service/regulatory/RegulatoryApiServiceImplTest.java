@@ -7,13 +7,18 @@ import static org.mockito.BDDMockito.then;
 import io.github.gracegrc.regulatoryingestionservice.boot.client.RegulatoryApiClient;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.domain.model.dto.RegulatoryFrameworkResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFileResponseDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkResponseDto;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -42,6 +47,16 @@ class RegulatoryApiServiceImplTest {
 
 	private static final RegulatoryFrameworkResponseDto FRAMEWORK = new RegulatoryFrameworkResponseDto(FRAMEWORK_ID,
 			ID, "Capital Requirements Regulation", "CRR", null, true, CREATED_AT, "admin-console");
+
+	private static final UUID FILE_ID = UUID.fromString("c4d5e6f7-1a2b-4c3d-8e9f-0a1b2c3d4e50");
+
+	private static final LocalDate PUBLISHED = LocalDate.parse("2024-07-09");
+
+	private static final RegulatoryApiFileResponseDto API_FILE = new RegulatoryApiFileResponseDto(FILE_ID,
+			FRAMEWORK_ID, "CRR consolidated text", null, "2024-07", PUBLISHED, CREATED_AT, "admin-console");
+
+	private static final RegulatoryFileResponseDto FILE = new RegulatoryFileResponseDto(FILE_ID, FRAMEWORK_ID,
+			"CRR consolidated text", null, "2024-07", PUBLISHED, CREATED_AT, "admin-console");
 
 	@Mock
 	private RegulatoryApiClient regulatoryApiClient;
@@ -109,6 +124,38 @@ class RegulatoryApiServiceImplTest {
 		regulatoryApiService.deleteFramework(FRAMEWORK_ID);
 
 		then(regulatoryApiClient).should().deleteFramework(FRAMEWORK_ID);
+	}
+
+	@Test
+	void createFileSendsTheMappedRequestAndReturnsTheId() {
+		given(regulatoryApiClient.createFile(new RegulatoryApiFileRequestDto(FRAMEWORK_ID, "CRR consolidated text",
+				null, "2024-07", PUBLISHED, "admin-console")))
+			.willReturn(FILE_ID);
+
+		assertThat(regulatoryApiService.createFile(new RegulatoryFileRequestDto(FRAMEWORK_ID, "CRR consolidated text",
+				null, "2024-07", PUBLISHED, "admin-console")))
+			.isEqualTo(FILE_ID);
+	}
+
+	@Test
+	void findAllFilesPassesTheFrameworkAndMapsTheList() {
+		given(regulatoryApiClient.findAllFiles(FRAMEWORK_ID)).willReturn(List.of(API_FILE));
+
+		assertThat(regulatoryApiService.findAllFiles(FRAMEWORK_ID)).containsExactly(FILE);
+	}
+
+	@Test
+	void findFileByIdMapsTheFileFromTheClient() {
+		given(regulatoryApiClient.findFileById(FILE_ID)).willReturn(API_FILE);
+
+		assertThat(regulatoryApiService.findFileById(FILE_ID)).isEqualTo(FILE);
+	}
+
+	@Test
+	void deleteFileAsksTheClientToDeleteIt() {
+		regulatoryApiService.deleteFile(FILE_ID);
+
+		then(regulatoryApiClient).should().deleteFile(FILE_ID);
 	}
 
 }
