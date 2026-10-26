@@ -2,8 +2,11 @@ package io.github.gracegrc.regulatoryingestionservice.boot.client;
 
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityRequestDto;
 import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiAuthorityResponseDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkRequestDto;
+import io.github.gracegrc.regulatoryingestionservice.service.model.dto.RegulatoryApiFrameworkResponseDto;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -15,6 +18,8 @@ public class RegulatoryApiClient {
 
 	private static final String AUTHORITIES_PATH = "/api/v1/authorities";
 
+	private static final String FRAMEWORKS_PATH = "/api/v1/frameworks";
+
 	private final RestClient regulatoryApiRestClient;
 
 	public RegulatoryApiClient(RestClient regulatoryApiRestClient) {
@@ -22,14 +27,7 @@ public class RegulatoryApiClient {
 	}
 
 	public UUID createAuthority(RegulatoryApiAuthorityRequestDto request) {
-		URI location = regulatoryApiRestClient.post()
-			.uri(AUTHORITIES_PATH)
-			.body(request)
-			.retrieve()
-			.toBodilessEntity()
-			.getHeaders()
-			.getLocation();
-		return idFrom(location);
+		return create(AUTHORITIES_PATH, request, "authority");
 	}
 
 	public List<RegulatoryApiAuthorityResponseDto> findAllAuthorities() {
@@ -48,12 +46,52 @@ public class RegulatoryApiClient {
 	}
 
 	public void deleteAuthority(UUID id) {
-		regulatoryApiRestClient.delete().uri(AUTHORITIES_PATH + "/{id}", id).retrieve().toBodilessEntity();
+		delete(AUTHORITIES_PATH, id);
 	}
 
-	private static UUID idFrom(URI location) {
+	public UUID createFramework(RegulatoryApiFrameworkRequestDto request) {
+		return create(FRAMEWORKS_PATH, request, "framework");
+	}
+
+	public List<RegulatoryApiFrameworkResponseDto> findAllFrameworks(UUID authorityId) {
+		return regulatoryApiRestClient.get()
+			.uri(builder -> builder.path(FRAMEWORKS_PATH)
+				.queryParamIfPresent("authorityId", Optional.ofNullable(authorityId))
+				.build())
+			.retrieve()
+			.body(new ParameterizedTypeReference<>() {
+			});
+	}
+
+	public RegulatoryApiFrameworkResponseDto findFrameworkById(UUID id) {
+		return regulatoryApiRestClient.get()
+			.uri(FRAMEWORKS_PATH + "/{id}", id)
+			.retrieve()
+			.body(RegulatoryApiFrameworkResponseDto.class);
+	}
+
+	public void deleteFramework(UUID id) {
+		delete(FRAMEWORKS_PATH, id);
+	}
+
+	private UUID create(String path, Object request, String resource) {
+		URI location = regulatoryApiRestClient.post()
+			.uri(path)
+			.body(request)
+			.retrieve()
+			.toBodilessEntity()
+			.getHeaders()
+			.getLocation();
+		return idFrom(location, resource);
+	}
+
+	private void delete(String path, UUID id) {
+		regulatoryApiRestClient.delete().uri(path + "/{id}", id).retrieve().toBodilessEntity();
+	}
+
+	private static UUID idFrom(URI location, String resource) {
 		if (location == null) {
-			throw new RestClientException("The Regulatory API did not return the location of the new authority");
+			throw new RestClientException("The Regulatory API did not return the location of the new " + resource);
 		}
 		String path = location.getPath();
 		try {
